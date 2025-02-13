@@ -136,7 +136,7 @@ def state_mom():
 @app.route('/api/all-states', methods=['GET'])
 def all_states():
     data_point = request.args.get('dataPoint')
-    
+    data_point = mapping_dict[data_point]
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
     last_column_data = df.iloc[:, -1]  # Column values
