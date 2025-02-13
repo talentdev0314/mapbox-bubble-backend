@@ -11,7 +11,7 @@ import json
 from constants import mapping_dict, state_mapping, yoy_list
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def trim_array(column_labels, values):
     start_index = 0
