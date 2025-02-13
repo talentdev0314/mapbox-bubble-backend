@@ -6,65 +6,287 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import requests
+import pandas as pd
+import json
+from constants import mapping_dict, state_mapping, yoy_list
 
 app = Flask(__name__)
 CORS(app)
-@app.route('/api/population/<int:year>/<string:stateCode>', methods=['GET'])
-def get_population_by_year_state(year, stateCode):
-    url = f"https://api.census.gov/data/{year}/acs/acsse?get=K200101_001E&for=state:{stateCode}&key=83e384a00001c1bfd012b612302bd069ac8b7b48"
-    response = requests.get(url)
-    print(response)
-    if response.status_code == 200:
-        print(response.json())
-        return response.json()
+
+def trim_array(column_labels, values):
+    start_index = 0
+    end_index = len(values) - 1
+    
+    while start_index < len(values) - 1 and (pd.isna(values[start_index]) or values[start_index] == '#VALUE!'):
+        start_index += 1
+    
+    while end_index >= 0 and (pd.isna(values[start_index]) or values[start_index] == '#VALUE!'):
+        end_index -= 1
+    
+    trimmed_values = values[start_index:end_index + 1]
+    trimmed_column_labels = column_labels[start_index:end_index + 1]
+    
+    trimmed_values = [0 if pd.isna(v) or v == '#VALUE!' else v for v in trimmed_values]
+    
+    return trimmed_column_labels, trimmed_values
+
+def calculate_m2y(column_labels, values):
+
+    selected_labels = []
+    selected_values = []
+    
+    for i in range(len(column_labels) - 1, -1, -12):
+        selected_labels.append(column_labels[i][:4])
+        selected_values.append(values[i])
+    
+    final_labels = selected_labels[::-1]
+    final_values = selected_values[::-1]
+    
+    return final_labels, final_values
+
+def calculate_y2m(yoy_labels, yoy_values):
+       
+    mom_values = []
+    mom_labels = []
+    
+    for i in range(len(yoy_values) - 1):
+        start_value = float(yoy_values[i])
+        end_value = float(yoy_values[i + 1])
+        start_year = int(yoy_labels[i])  # Year from the yoy_labels
+        end_year = int(yoy_labels[i + 1])  # Year from the yoy_labels
+        
+        mom_labels.append(f'{start_year}12')  # December (12th month)
+        mom_values.append(start_value)
+        
+        months_between = 11
+        for j in range(1, months_between + 1):
+            interpolated_value = start_value + (j / months_between) * (end_value - start_value)
+            
+            month_index = (12 + j - 1) % 12 + 1  # For Jan-Nov of the end year
+            year_index = start_year + (j // 12)  # Increase year after December
+            
+            mom_labels.append(f'{start_year + (j // 12)}{str(month_index).zfill(2)}')
+            mom_values.append(interpolated_value)
+    
+    return mom_labels, mom_values
+
+@app.route('/api/state/<string:state_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
+def state_yoy(state_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    state_code = int(state_code)
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
+    if state_code in df.index:
+        state_row = df.loc[state_code]
     else:
-        return f"Error: {response.status_code}"
-
-@app.route('/api/state/<string:geoid>/<string:checkedItems>', methods=['GET'])
-def get_by_state(geoid, checkedItems):
-    items = checkedItems.split(',')
-    for item in items:
-        if item == 'Population':
-            population = get_population_by_state(geoid)
-            print(population, 'population')
-        elif item == 'Median Household Income':
-            medianHouseholdIncome = get_median_household_income_by_state(geoid)
-            print(medianHouseholdIncome, 'medianHouseholdIncome')
-        elif item == 'Population Growth':
-            populationGrowth = population_growth(geoid)
-            print(populationGrowth, 'populationGrowth')
-    return jsonify({'Population': population, 'Median Household Income': medianHouseholdIncome, 'Population Growth': populationGrowth})
-
-def get_population_by_state(stateCode):
-    year = 2023
-    url = f"https://api.census.gov/data/{year}/acs/acsse?get=K200101_001E&for=state:{stateCode}&key=83e384a00001c1bfd012b612302bd069ac8b7b48"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return int(response.json()[1][0])
+        state_row = df.loc[abbreviation]
+    
+    column_labels = state_row.index.tolist()
+    values = state_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = column_labels, values
     else:
-        return f"Error: {response.status_code}"
+        final_labels, final_values = calculate_m2y(column_labels, values)
+        
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
+    
 
-def get_median_household_income_by_state(stateCode):    
-    year = 2023
-    url = f"https://api.census.gov/data/{year}/acs/acs1?get=B19019_001E&for=state:{stateCode}&key=83e384a00001c1bfd012b612302bd069ac8b7b48"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return int(response.json()[1][0])
+@app.route('/api/state/<string:state_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
+def state_mom(state_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    state_code = int(state_code)
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
+    if state_code in df.index:
+        state_row = df.loc[state_code]
     else:
-        return f"Error: {response.status_code}"
+        state_row = df.loc[abbreviation]
+        
+    column_labels = state_row.index.tolist()
+    values = state_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = calculate_y2m(column_labels, values)
+    else:
+        final_labels, final_values = column_labels, values
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
 
-def population_growth(stateCode):
-    past_year = 2022
-    url = f"https://api.census.gov/data/{past_year}/acs/acsse?get=K200101_001E&for=state:{stateCode}&key=83e384a00001c1bfd012b612302bd069ac8b7b48"
-    response = requests.get(url)
-    if response.status_code == 200:
-        past_polulation = int(response.json()[1][0])
-    year = 2023
-    url = f"https://api.census.gov/data/{year}/acs/acsse?get=K200101_001E&for=state:{stateCode}&key=83e384a00001c1bfd012b612302bd069ac8b7b48"
-    response = requests.get(url)
-    if response.status_code == 200:
-        population = int(response.json()[1][0])
-    return (population - past_polulation) / past_polulation * 100
+@app.route('/api/all-states/<string:data_point>', methods=['GET'])
+def all_states(data_point):
+    data_point = mapping_dict[data_point]
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
+    last_column_name = df.columns[-1]  # Column name
+    last_column_data = df.iloc[:, -1]  # Column values
+
+    json_data = dict(zip(last_column_data.index.astype(str), last_column_data.values.tolist()))
+    return jsonify(json_data)
+
+@app.route('/api/metro/<string:metro_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
+def metro_yoy(metro_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    metro_code = int(metro_code)
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
+    if metro_code in df.index:
+        metro_row = df.loc[metro_code]
+    else:
+        metro_row = df.loc[abbreviation]
+    
+    column_labels = metro_row.index.tolist()
+    values = metro_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = column_labels, values
+    else:
+        final_labels, final_values = calculate_m2y(column_labels, values)
+        
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
+    
+
+@app.route('/api/metro/<string:metro_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
+def metro_mom(metro_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    metro_code = int(metro_code)
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
+    if metro_code in df.index:
+        metro_row = df.loc[metro_code]
+    else:
+        metro_row = df.loc[abbreviation]
+        
+    column_labels = metro_row.index.tolist()
+    values = metro_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = calculate_y2m(column_labels, values)
+    else:
+        final_labels, final_values = column_labels, values
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
+
+@app.route('/api/all-metros/<string:data_point>', methods=['GET'])
+def all_metros(data_point):
+    data_point = mapping_dict[data_point]
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
+    last_column_name = df.columns[-1]  # Column name
+    last_column_data = df.iloc[:, -1]  # Column values
+    filtered_data = last_column_data.dropna()
+    json_data = dict(zip(filtered_data.index.astype(str), filtered_data.values.tolist()))
+
+    return jsonify(json_data)
+
+@app.route('/api/county/<string:county_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
+def county_yoy(county_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    county_code = int(county_code)
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
+    if county_code in df.index:
+        county_row = df.loc[county_code]
+    else:
+        county_row = df.loc[abbreviation]
+    
+    column_labels = county_row.index.tolist()
+    values = county_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = column_labels, values
+    else:
+        final_labels, final_values = calculate_m2y(column_labels, values)
+        
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
+    
+
+@app.route('/api/county/<string:county_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
+def county_mom(county_code, abbreviation, data_point):
+    data_point = mapping_dict[data_point]
+    county_code = int(county_code)
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
+    if county_code in df.index:
+        county_row = df.loc[county_code]
+    else:
+        county_row = df.loc[abbreviation]
+        
+    column_labels = county_row.index.tolist()
+    values = county_row.values.tolist()
+    column_labels, values = trim_array(column_labels, values)
+    
+    if data_point in yoy_list:
+        final_labels, final_values = calculate_y2m(column_labels, values)
+    else:
+        final_labels, final_values = column_labels, values
+    
+    response = {
+        "fullLabels": final_labels,
+        "fullData": final_values
+    }
+    
+    return jsonify(response)
+
+@app.route('/api/all-counties/<string:data_point>', methods=['GET'])
+def all_counties(data_point):
+    data_point = mapping_dict[data_point]
+    
+    df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
+    last_column_name = df.columns[-1]  # Column name
+    last_column_data = df.iloc[:, -1]  # Column values
+
+    json_data = dict(zip(last_column_data.index.astype(str), last_column_data.values.tolist()))
+
+    return jsonify(json_data)
+# @app.route('/api/metro/<string:metro_code>/<string:data_point>/yoy', methods=['GET'])
+# @app.route('/api/metro/<string:metro_code>/<string:data_point>/mom', methods=['GET'])
+# @app.route('/api/all-metros/<string:data_point>/mom', methods=['GET'])
+
+
+# @app.route('/api/county/<string:county_code>/<string:data_point>/yoy', methods=['GET'])
+# @app.route('/api/county/<string:county_code>/<string:data_point>/mom', methods=['GET'])
+# @app.route('/api/all-counties/<string:data_point>/mom', methods=['GET'])
+
+
+
+
+
+
+
+# @app.route('/api/zipcode/<string:zipcode>/<string:data_point>/yoy', methods=['GET'])
+# @app.route('/api/zipcode/<string:zipcode>/<string:data_point>/mom', methods=['GET'])
+# @app.route('/api/all-zipcodes/<string:data_point>/mom', methods=['GET'])
 
 
 if __name__ == '__main__':
