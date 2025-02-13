@@ -70,8 +70,12 @@ def calculate_y2m(yoy_labels, yoy_values):
     
     return mom_labels, mom_values
 
-@app.route('/api/state/<string:state_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
-def state_yoy(state_code, abbreviation, data_point):
+@app.route('/api/state/yoy', methods=['GET'])
+def state_yoy():
+    state_code = request.args.get('stateCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     state_code = int(state_code)
     
@@ -99,8 +103,12 @@ def state_yoy(state_code, abbreviation, data_point):
     return jsonify(response)
     
 
-@app.route('/api/state/<string:state_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
-def state_mom(state_code, abbreviation, data_point):
+@app.route('/api/state/mom', methods=['GET'])
+def state_mom():
+    state_code = request.args.get('stateCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     state_code = int(state_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
@@ -125,9 +133,9 @@ def state_mom(state_code, abbreviation, data_point):
     
     return jsonify(response)
 
-@app.route('/api/all-states/<string:data_point>', methods=['GET'])
-def all_states(data_point):
-    data_point = mapping_dict[data_point]
+@app.route('/api/all-states', methods=['GET'])
+def all_states():
+    data_point = request.args.get('dataPoint')
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
@@ -136,8 +144,12 @@ def all_states(data_point):
     json_data = dict(zip(last_column_data.index.astype(str), last_column_data.values.tolist()))
     return jsonify(json_data)
 
-@app.route('/api/metro/<string:metro_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
-def metro_yoy(metro_code, abbreviation, data_point):
+@app.route('/api/metro/yoy', methods=['GET'])
+def metro_yoy():
+    metro_code = request.args.get('metroCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     metro_code = int(metro_code)
     
@@ -165,8 +177,12 @@ def metro_yoy(metro_code, abbreviation, data_point):
     return jsonify(response)
     
 
-@app.route('/api/metro/<string:metro_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
-def metro_mom(metro_code, abbreviation, data_point):
+@app.route('/api/metro/mom', methods=['GET'])
+def metro_mom():
+    metro_code = request.args.get('metroCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     metro_code = int(metro_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
@@ -191,8 +207,9 @@ def metro_mom(metro_code, abbreviation, data_point):
     
     return jsonify(response)
 
-@app.route('/api/all-metros/<string:data_point>', methods=['GET'])
+@app.route('/api/all-metros', methods=['GET'])
 def all_metros(data_point):
+    data_point = request.args.get('dataPoint')
     data_point = mapping_dict[data_point]
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
@@ -203,8 +220,12 @@ def all_metros(data_point):
 
     return jsonify(json_data)
 
-@app.route('/api/county/<string:county_code>/<string:abbreviation>/<string:data_point>/yoy', methods=['GET'])
+@app.route('/api/county/yoy', methods=['GET'])
 def county_yoy(county_code, abbreviation, data_point):
+    county_code = request.args.get('countyCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     county_code = int(county_code)
     
@@ -232,8 +253,12 @@ def county_yoy(county_code, abbreviation, data_point):
     return jsonify(response)
     
 
-@app.route('/api/county/<string:county_code>/<string:abbreviation>/<string:data_point>/mom', methods=['GET'])
+@app.route('/api/county/mom', methods=['GET'])
 def county_mom(county_code, abbreviation, data_point):
+    county_code = request.args.get('countyCode')
+    abbreviation = request.args.get('abbreviation')
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     county_code = int(county_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
@@ -258,8 +283,10 @@ def county_mom(county_code, abbreviation, data_point):
     
     return jsonify(response)
 
-@app.route('/api/all-counties/<string:data_point>', methods=['GET'])
+@app.route('/api/all-counties', methods=['GET'])
 def all_counties(data_point):
+    data_point = request.args.get('dataPoint')
+    
     data_point = mapping_dict[data_point]
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
