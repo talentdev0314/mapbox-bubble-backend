@@ -208,7 +208,7 @@ def metro_mom():
     return jsonify(response)
 
 @app.route('/api/all-metros', methods=['GET'])
-def all_metros(data_point):
+def all_metros():
     data_point = request.args.get('dataPoint')
     data_point = mapping_dict[data_point]
     
@@ -221,7 +221,7 @@ def all_metros(data_point):
     return jsonify(json_data)
 
 @app.route('/api/county/yoy', methods=['GET'])
-def county_yoy(county_code, abbreviation, data_point):
+def county_yoy():
     county_code = request.args.get('countyCode')
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
@@ -254,7 +254,7 @@ def county_yoy(county_code, abbreviation, data_point):
     
 
 @app.route('/api/county/mom', methods=['GET'])
-def county_mom(county_code, abbreviation, data_point):
+def county_mom():
     county_code = request.args.get('countyCode')
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
@@ -284,7 +284,7 @@ def county_mom(county_code, abbreviation, data_point):
     return jsonify(response)
 
 @app.route('/api/all-counties', methods=['GET'])
-def all_counties(data_point):
+def all_counties():
     data_point = request.args.get('dataPoint')
     
     data_point = mapping_dict[data_point]
