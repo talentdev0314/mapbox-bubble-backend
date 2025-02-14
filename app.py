@@ -140,8 +140,9 @@ def all_states():
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
     last_column_data = df.iloc[:, -1]  # Column values
+    filtered_data = last_column_data.dropna()
 
-    json_data = dict(zip(last_column_data.index.astype(str), last_column_data.values.tolist()))
+    json_data = dict(zip(filtered_data.index.astype(str), filtered_data.values.tolist()))
     return jsonify(json_data)
 
 @app.route('/api/metro/yoy', methods=['GET'])
@@ -292,8 +293,9 @@ def all_counties():
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
     last_column_data = df.iloc[:, -1]  # Column values
+    filtered_data = last_column_data.dropna()
 
-    json_data = dict(zip(last_column_data.index.astype(str), last_column_data.values.tolist()))
+    json_data = dict(zip(filtered_data.index.astype(str), filtered_data.values.tolist()))
 
     return jsonify(json_data)
 # @app.route('/api/metro/<string:metro_code>/<string:data_point>/yoy', methods=['GET'])
