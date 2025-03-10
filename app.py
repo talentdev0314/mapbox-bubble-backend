@@ -74,10 +74,10 @@ def calculate_y2m(yoy_labels, yoy_values):
 def state_yoy():
     state_code = request.args.get('stateCode')
     abbreviation = request.args.get('abbreviation')
-    data_point = request.args.get('dataPoint')
+    data_point_request = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]["slug"]
-    additional_fields = mapping_dict[data_point]["additional_fields"]
+    data_point = mapping_dict[data_point_request]["slug"]
+    additional_fields = mapping_dict[data_point_request]["additional_fields"]
     
     state_code = int(state_code)
     
