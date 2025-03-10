@@ -76,7 +76,9 @@ def state_yoy():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
+    additional_fields = mapping_dict[data_point]["additional_fields"]
+    
     state_code = int(state_code)
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
@@ -93,7 +95,6 @@ def state_yoy():
         final_labels, final_values = column_labels, values
     else:
         final_labels, final_values = calculate_m2y(column_labels, values)
-        
     
     response = {
         "fullLabels": final_labels,
@@ -109,7 +110,7 @@ def state_mom():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     state_code = int(state_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
     if state_code in df.index:
@@ -136,7 +137,7 @@ def state_mom():
 @app.route('/api/all-states', methods=['GET'])
 def all_states():
     data_point = request.args.get('dataPoint')
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'state/us-state-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
     last_column_data = df.iloc[:, -1]  # Column values
@@ -151,7 +152,7 @@ def metro_yoy():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     metro_code = int(metro_code)
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
@@ -184,7 +185,7 @@ def metro_mom():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     metro_code = int(metro_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
     if metro_code in df.index:
@@ -211,7 +212,7 @@ def metro_mom():
 @app.route('/api/all-metros', methods=['GET'])
 def all_metros():
     data_point = request.args.get('dataPoint')
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'metro/us-metro-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
@@ -227,7 +228,7 @@ def county_yoy():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     county_code = int(county_code)
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
@@ -260,7 +261,7 @@ def county_mom():
     abbreviation = request.args.get('abbreviation')
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     county_code = int(county_code)
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
     if county_code in df.index:
@@ -288,7 +289,7 @@ def county_mom():
 def all_counties():
     data_point = request.args.get('dataPoint')
     
-    data_point = mapping_dict[data_point]
+    data_point = mapping_dict[data_point]["slug"]
     
     df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'county/us-county-{data_point}.csv'), index_col=0)
     last_column_name = df.columns[-1]  # Column name
@@ -301,7 +302,6 @@ def all_counties():
 # @app.route('/api/metro/<string:metro_code>/<string:data_point>/yoy', methods=['GET'])
 # @app.route('/api/metro/<string:metro_code>/<string:data_point>/mom', methods=['GET'])
 # @app.route('/api/all-metros/<string:data_point>/mom', methods=['GET'])
-
 
 # @app.route('/api/county/<string:county_code>/<string:data_point>/yoy', methods=['GET'])
 # @app.route('/api/county/<string:county_code>/<string:data_point>/mom', methods=['GET'])
