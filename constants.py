@@ -130,8 +130,8 @@ mapping_dict = {
         },
         "additional-data": []
     },
-    "% Crash from 2007-12": {
-        "slug": "%-crash-07-12",
+    "% Cash from 2007-12": {
+        "slug": "%-cash-07-12",
         "yearly-only": True,
         "format": {
             "prefix": "$",
@@ -167,7 +167,7 @@ mapping_dict = {
         "additional-data": []
     },
     "Sale Inventory Growth (YoY)": {
-        "slug": "for-sale-inventory",
+        "slug": "sale-inventory-growth-yoy",
         "yearly-only": False,
         "format": {
             "prefix": "",
@@ -179,7 +179,7 @@ mapping_dict = {
         "additional-data": ["Last Year", "Current Year"]
     },
     "Inventory Surplus/Deficit": {
-        "slug": "inventory-surplus-deficit",
+        "slug": "inventory-surplus-to-deficit",
         "yearly-only": False,
         "format": {
             "prefix": "",
@@ -215,7 +215,7 @@ mapping_dict = {
         "additional-data": []
     },
     "Days on Market Growth (YoY)": {
-        "slug": "days-on-market-growth",
+        "slug": "days-on-market-growth-yoy",
         "yearly-only": False,
         "format": {
             "prefix": "",
@@ -434,7 +434,7 @@ mapping_dict = {
         "additional-data": []
     },
     "Housing Unit Growth Rate": {
-        "slug": "housing-unit-growth-rate",
+        "slug": "housing-units-growth-rate",
         "yearly-only": True,
         "format": {
             "prefix": "",
@@ -530,7 +530,7 @@ mapping_dict = {
         "additional-data": ["Yearly Apartment Rent", "Med. HH. Income"]
     },
     "Shadow Inventory %": {
-        "slug": "shadow-inventory",
+        "slug": "shadow-inventory-%",
         "yearly-only": True,
         "format": {
             "prefix": "",
