@@ -90,11 +90,10 @@ def state_yoy():
     column_labels = state_row.index.tolist()
     values = state_row.values.tolist()
     column_labels, values = trim_array(column_labels, values)
+    print(column_labels) 
+    print(values)
     
-    if data_point in yoy_list:
-        final_labels, final_values = column_labels, values
-    else:
-        final_labels, final_values = calculate_m2y(column_labels, values)
+    final_labels, final_values = column_labels, values
     
     response = {
         "fullLabels": final_labels,
