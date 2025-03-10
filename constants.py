@@ -63,7 +63,7 @@ mapping_dict = {
         },
         "additional-data": ["Typical Home Price", "Fair Home Value"]
     },
-    "Value/Income Ratio": {
+    "Value Income Ratio": {
         "slug": "value-to-income-ratio",
         "yearly-only": False,
         "format": {
