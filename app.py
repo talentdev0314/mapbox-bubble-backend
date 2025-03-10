@@ -77,7 +77,7 @@ def state_yoy():
     data_point_request = request.args.get('dataPoint')
     
     data_point = mapping_dict[data_point_request]["slug"]
-    additional_fields = mapping_dict[data_point_request]["additional_fields"]
+    additional_fields = mapping_dict[data_point_request]["additional-data"]
     
     state_code = int(state_code)
     
