@@ -130,8 +130,8 @@ mapping_dict = {
         },
         "additional-data": []
     },
-    "% Cash from 2007-12": {
-        "slug": "%-cash-07-12",
+    "% Crash from 2007-12": {
+        "slug": "%-crash-07-12",
         "yearly-only": True,
         "format": {
             "prefix": "$",
