@@ -178,7 +178,7 @@ mapping_dict = {
         },
         "additional-data": ["Last Year", "Current Year"]
     },
-    "Inventory Surplus Deficit": {
+    "Inventory Surplus/Deficit": {
         "slug": "inventory-surplus-to-deficit",
         "yearly-only": False,
         "format": {
@@ -253,7 +253,7 @@ mapping_dict = {
         },
         "additional-data": []
     },
-    "Median Listing Price (YoY)": {
+    "Median Listing Price Growth (YoY)": {
         "slug": "median-listing-price-growth-yoy",
         "yearly-only": False,
         "format": {
@@ -277,7 +277,7 @@ mapping_dict = {
         },
         "additional-data": []
     },
-    "New Listing Count (YoY)": {
+    "New Listing Count Growth (YoY)": {
         "slug": "new-listing-count-growth-yoy",
         "yearly-only": False,
         "format": {
