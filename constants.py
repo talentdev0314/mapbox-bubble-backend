@@ -178,7 +178,7 @@ mapping_dict = {
         },
         "additional-data": ["Last Year", "Current Year"]
     },
-    "Inventory Surplus/Deficit": {
+    "Inventory Surplus Deficit": {
         "slug": "inventory-surplus-to-deficit",
         "yearly-only": False,
         "format": {
