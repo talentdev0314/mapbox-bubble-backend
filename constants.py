@@ -178,7 +178,7 @@ mapping_dict = {
         },
         "additional-data": ["Last Year", "Current Year"]
     },
-    "Inventory Surplus/Deficit": {
+    "Inventory Surplus Deficit": {
         "slug": "inventory-surplus-to-deficit",
         "yearly-only": False,
         "format": {
@@ -335,7 +335,7 @@ mapping_dict = {
             "graph-suffix": "%",
             "graph-fixed": 1
         },
-        "additional-data": ["Last Year", "Current Year"]
+        "additional-data": ["Population", "Population"]
     },
     "Income Growth": {
         "slug": "income-growth",
@@ -469,8 +469,8 @@ mapping_dict = {
         },
         "additional-data": []
     },
-    "Rental For Houses": {
-        "slug": "rental-for-houses",
+    "Rent for Houses": {
+        "slug": "rent-for-houses",
         "yearly-only": False,
         "format": {
             "prefix": "$",
